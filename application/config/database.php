@@ -76,14 +76,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 'password' => 'mailme24hr',
 'database' => 'wizbeeco_hmtrading_prod',*/
 
+// Localhost DB configuration
+// 'username' => 'root',
+// 'password' => '',
+// 'database' => 'wizbeeco_fatake_fund',
+
 $active_group = 'default';
 $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
+	'username' => 'wizbeeco_root',
+	'password' => 'mailme24hr',
 	'database' => 'wizbeeco_fatake_fund',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
