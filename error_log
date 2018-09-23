@@ -1,0 +1,17 @@
+[23-Feb-2017 00:52:23 Asia/Kolkata] PHP Warning:  require_once(/home/wizbeeco/sktraders.wizbee.co.in/system/core/CodeIgniter.php): failed to open stream: No such file or directory in /home/wizbeeco/sktraders.wizbee.co.in/index.php on line 315
+[23-Feb-2017 00:52:23 Asia/Kolkata] PHP Fatal error:  require_once(): Failed opening required '/home/wizbeeco/sktraders.wizbee.co.in/system/core/CodeIgniter.php' (include_path='.:/usr/lib/php:/usr/local/lib/php') in /home/wizbeeco/sktraders.wizbee.co.in/index.php on line 315
+[26-Feb-2017 23:15:53 Asia/Kolkata] PHP Fatal error:  Call to undefined method Work_model::search_work_data() in /home/wizbeeco/sktraders.wizbee.co.in/application/controllers/Work.php on line 55
+[18-Feb-2018 15:47:43 UTC] PHP Fatal error:  Cannot use object of type stdClass as array in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 250
+[18-Feb-2018 20:13:03 UTC] PHP Fatal error:  Cannot use object of type stdClass as array in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 237
+[20-Feb-2018 18:05:13 UTC] PHP Parse error:  syntax error, unexpected ';' in /home/hmtradin/public_html/Services/application/models/Customer_model.php on line 319
+[20-Feb-2018 18:05:20 UTC] PHP Parse error:  syntax error, unexpected ';' in /home/hmtradin/public_html/Services/application/models/Customer_model.php on line 319
+[25-Feb-2018 06:28:08 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:30:09 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:43:01 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:47:26 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:51:03 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:51:55 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 06:57:14 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 07:01:37 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 07:02:05 UTC] PHP Fatal error:  Can't use method return value in write context in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 91
+[25-Feb-2018 07:21:53 UTC] PHP Parse error:  syntax error, unexpected 'if' (T_IF) in /home/hmtradin/public_html/Services/application/models/Transactions_model.php on line 92

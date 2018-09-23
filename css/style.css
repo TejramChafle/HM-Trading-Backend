@@ -1,0 +1,56 @@
+#login_body {
+    /*background-color: #ff8c66;*/
+    background-image: url('/images/MAHINDRA EARTH MASTER.jpg');
+    /*overflow:hidden;*/
+    background-repeat: no-repeat;
+    background-attachment: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+#login_form {
+    width: 100%;
+    background-color: white;
+    /*border: 1px solid black;*/
+    padding: 40px;
+    /*height: 55vh;*/
+    margin-top: 33%;
+}
+
+.dark_theme {
+    background-color: #ccff99;
+}
+
+.light_theme {
+    background-color: #f2b632;
+}
+
+.theme_text {
+    color: #252839;
+}
+
+footer {
+    background-color: black;
+    color: #252839;
+    position: absolute;
+    color: white;
+    padding: 15px;
+    bottom: 0px;
+    z-index: 1;
+    padding-bottom: 0;
+    margin: auto;
+    width: 100%;
+    text-align: center;
+}
+
+.open {
+    background-color: white;
+    color: black;
+}
+
+#login-image{
+    /*background-image: url('/images/JS130_1559_HU.Jpeg');*/
+    background-position: fixed;
+    border: 1px black;
+    height: 400px;
+}
