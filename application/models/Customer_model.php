@@ -150,8 +150,13 @@ class Customer_model extends CI_Model {
         unset($data['limit']);
         unset($data['page']);
 
+        if(isset( $data['item_id'])){
+            $item_id= $data['item_id'];
+            unset($data['item_id']);
+            $this->db->where('item_id', $item_id);
+        }
+
         if(sizeof($data)){
-            // $this->db->where($data);
             $this->db->like($data);
         }
 
