@@ -95,11 +95,7 @@ class Customer_model extends CI_Model {
 
                 // Now send the text message if the customer mobile number is provided
                 if(isset($data['mobile_number'])) {
-
-                    $user = "HMTrading";
-                    $password = "mailme24hr";
-                    $sid  =  "HMTRAD";
-
+                    
                     $msisdn  =  $data['mobile_number'];
                     $name = $data['name'];
 
@@ -119,14 +115,10 @@ class Customer_model extends CI_Model {
                         $msg = "Dear $name, you have been successfully registered for the HM Trading Fataka Fund Scheme as a agent. Contact for help on : +919765737487.";
                     }
 
-                    $msg = urlencode($msg);
-                    $fl = "0";
-                    $type   =  "txt";
-                    $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-                    curl_setopt($ch, CURLOPT_HEADER, 0);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    $output = curl_exec($ch);      
-                    curl_close($ch); 
+
+                    // Send message from send message service
+                    $this->load->model('Sendsms_model');
+                    $this->Sendsms_model->send_sms($msg, $msisdn);
                 }
 
                 return $query;
@@ -335,11 +327,7 @@ class Customer_model extends CI_Model {
 
                 // Now send the text message if the customer mobile number is provided
 
-                if(isset($data['phone'])) {
-
-                    $sid  =  "HMTRAD"; 
-                    $user = "HMTrading";
-                    $password = "mailme24hr"; 
+                if(isset($data['phone'])) { 
                     
                     $msisdn  =  $data['phone'];
                     $name = $data['name'];
@@ -351,15 +339,9 @@ class Customer_model extends CI_Model {
                         $msg = "Dear $name, you have been successfully registered for the HM Trading loan scheme. An amount of Rs. $amount has been given to you.";     
                     }
 
-                    $msg    = urlencode($msg);
-                    $fl     = "0";
-                    $type   =  "txt";
-
-                    $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-                    curl_setopt($ch, CURLOPT_HEADER, 0);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                    $output = curl_exec($ch);      
-                    curl_close($ch); 
+                    // Send message from send message service
+                    $this->load->model('Sendsms_model');
+                    $this->Sendsms_model->send_sms($msg, $msisdn);
                 }
 
 

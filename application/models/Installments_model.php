@@ -144,45 +144,26 @@ class Installments_model extends CI_Model {
                 array_push($months, $inst['month']);
             } 
 
-            /*if(isset($customer['mobile_number'])) {
+            if(isset($customer['mobile_number'])) {
 
-                // Replace with your username_price
-                $user = "HMTrading";
-                // Replace with your API KEY (We have sent API KEY on activation email, also available on panel)
-                $password = "mailme24hr"; 
                 // Replace with the destination mobile Number to which you want to send sms
-                $msisdn  =  $customer['mobile_number'];
-                // Replace if you have your own Six character Sender ID, or check with our support team.
-                $sid  =  "HMTRAD"; 
-                // Replace with client name
-                $name = $customer['name'];
-
-                $month = implode(",", $months);
-
+                $msisdn =  $customer['mobile_number'];
+                $name   = $customer['name'];
+                $month  = implode(",", $months);
                 $installment = $amount;
 
                 // Replace with your Message content
                 $msg = "Dear $name, we have received installment Rs $installment of the month $month.";
 
-                if($fine!=0){
+                if($fine!=0) {
                     $msg .= " A fine of Rs $fine is imposed on you for late payment.";              
                 }
 
-                $msg = urlencode($msg);
-                // Keep 0 if you don’t want to flash the message
-                $fl = "0";
-                // if you are using transaction sms api then keep gwid = 2 or if promotional then remove this parameter
-                // $gwid = "2";
-                // For Plain Text, use "txt" ; for Unicode symbols or regional Languages like hindi/tamil/kannada use "uni"
-                $type   =  "txt";
-                $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);      
-                curl_close($ch); 
-                // Display MSGID of the successful sms push
-                // echo $output;
-            }*/
+
+                // Send message from send message service
+                $this->load->model('Sendsms_model');
+                $this->Sendsms_model->send_sms($msg, $msisdn);
+            }
         }
 
 
@@ -333,24 +314,14 @@ class Installments_model extends CI_Model {
         $phone = $customer['mobile_number'];
 
         if(isset($customer['mobile_number'])) {
-            $user = "HMTrading";
-            $password = "mailme24hr"; 
-            $sid  =  "HMTRAD"; 
-
+            
             $msisdn  =  $customer['mobile_number'];
             $name = $customer['name'];
-
             $msg = "Dear $name, congratulations! You are the lucky customer of HM Trading for $month and have won $item";
-            $msg = urlencode($msg);
 
-            $fl = "0";
-            $type   =  "txt";
-
-            $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl."");
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);
-            curl_close($ch);
+            // Send message from send message service
+            $this->load->model('Sendsms_model');
+            $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
 
@@ -359,13 +330,8 @@ class Installments_model extends CI_Model {
 
         foreach ($query->result_array() as $customer) {
             if(isset($customer['mobile_number'])) {
-                // messagin credentials
-                $user = "HMTrading";
-                $password = "mailme24hr"; 
-                $sid  =  "HMTRAD"; 
-                $msisdn  =  $customer['mobile_number'];
 
-                // Replace with client name
+                $msisdn  =  $customer['mobile_number'];
                 $name = $customer['name'];
 
                 // current month
@@ -374,18 +340,11 @@ class Installments_model extends CI_Model {
                 // Replace with your Message content
                 $msg = "Dear $name, congratulate $winner for winning lucky customer draw of HM Trading for $month. He has won $item. Contact him on $phone.";
 
-                $msg = urlencode($msg);
-                $fl = "0";
-                $type   =  "txt";
-                $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl."");
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                $output = curl_exec($ch);
-                curl_close($ch);
+                // Send message from send message service
+                $this->load->model('Sendsms_model');
+                $this->Sendsms_model->send_sms($msg, $msisdn);
             }
         }
-
-        
 
         return $output;
     }

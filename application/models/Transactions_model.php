@@ -177,27 +177,17 @@ class Transactions_model extends CI_Model {
 
         if(isset($customer['phone'])) {
 
-            $sid  =  "HMTRAD"; 
-            $user = "HMTrading";
-            $password = "mailme24hr"; 
-
-
-            $msisdn =  $customer['phone'];
-            $name   = $customer['name'];
-            $month  =  date('F');
-            $amount = $params['amount'];
+            $msisdn =   $customer['phone'];
+            $name   =   $customer['name'];
+            $month  =   date('F');
+            $amount =   $params['amount'];
 
             // Replace with your Message content
             $msg = "Dear $name, we have received saving amount of Rs $amount of the month $month.";
-            $msg = urlencode($msg);
-            
-            $fl = "0";
-            $type   =  "txt";
-            $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);      
-            curl_close($ch); 
+
+            // Send message from send message service
+            $this->load->model('Sendsms_model');
+            $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
         return  $insert_id;
@@ -254,11 +244,6 @@ class Transactions_model extends CI_Model {
 
         if(isset($customer['phone'])) {
 
-            $user = "HMTrading";
-            $password = "mailme24hr"; 
-            $sid  =  "HMTRAD"; 
-
-
             $msisdn  =  $customer['phone'];
             $name = $customer['name'];
             $amount = $params['amount'];
@@ -283,15 +268,9 @@ class Transactions_model extends CI_Model {
 
             $msg .= " Contact for help: +919765737487.";
 
-            $msg = urlencode($msg);
-            $fl = "0";
-
-            $type   =  "txt";
-            $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);      
-            curl_close($ch); 
+            // Send message from send message service
+            $this->load->model('Sendsms_model');
+            $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
         return  $insert_id;
@@ -343,26 +322,17 @@ class Transactions_model extends CI_Model {
 
         if(isset($customer['phone'])) {
 
-            $user = "HMTrading";
-            $password = "mailme24hr"; 
-            $sid  =  "HMTRAD"; 
-
             // Replace with client name
-            $name = $customer['name'];
+            $name   = $customer['name'];
             $amount = $params['amount'];
             $msisdn = $customer['phone'];
 
             // Replace with your Message content
             $msg = "Dear $name, we have confirmed your loan for the amount of Rs. $amount. Contact for help: +919765737487.";
-            $msg = urlencode($msg);
-            $fl = "0";
             
-            $type   =  "txt";
-            $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);      
-            curl_close($ch); 
+            // Send message from send message service
+            $this->load->model('Sendsms_model');
+            $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
         return  $insert_id;
@@ -439,11 +409,6 @@ class Transactions_model extends CI_Model {
 
         if(isset($customer['phone'])) {
 
-            $user = "HMTrading";
-            $password = "mailme24hr"; 
-            $sid  =  "HMTRAD"; 
-
-
             $msisdn  =  $customer['phone'];
             $name = $customer['name'];
             $month = $month = date('F');
@@ -452,15 +417,9 @@ class Transactions_model extends CI_Model {
             // Replace with your Message content
             $msg = "Dear $name, we have received saving amount of Rs $amount of the month $month.";
 
-            $msg = urlencode($msg);
-            $fl = "0";
-
-            $type   =  "txt";
-            $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            $output = curl_exec($ch);      
-            curl_close($ch); 
+            // Send message from send message service
+            $this->load->model('Sendsms_model');
+            $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
         return  $insert_id;
