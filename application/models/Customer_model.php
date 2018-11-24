@@ -35,6 +35,7 @@ class Customer_model extends CI_Model {
         : This function saves the customer record into the db
     ----------------------------------------------------------------------------------------*/
     function add_customer($data) {
+
         try {
             if(isset($data['customer_id'])) {
                 $this->db->where('customer_id', $data['customer_id']);
@@ -42,14 +43,25 @@ class Customer_model extends CI_Model {
                 $query = $this->db->update('customer', $data);
             } else {
 
+                // Check if the card exists in active accounts
+                $this->db->where('isActive', 1);
+                $this->db->where('card_number', $data['card_number']);
+                $query = $this->db->get('customer');
+                $person = $query->row_array();
+
+                if(isset($person) && is_array($person)){
+                    return "Error:The card number ".$data['card_number']." is already taken by ".$person['name'].". Please enter other card number.";
+                }
+
                 $data['created_date'] = date('Y-m-d H:i:s');
                 $data['last_modified_date'] = date('Y-m-d H:i:s');
-                $query = $this->db->insert('customer', $data);
+                $customer = $this->db->insert('customer', $data);
 
                 $customer_id = $this->db->insert_id();
 
                 // Here we'll send scheme id 
-                $this->db->where('scheme_id', 1);
+                // $this->db->where('scheme_id', 1);
+                $this->db->where('isActive', '1');
                 $query = $this->db->get('scheme_installment');
                 $input = array();
 
@@ -79,6 +91,15 @@ class Customer_model extends CI_Model {
                             //     $input['paid_fine'] = 5;               
                             // }    
                             $query = $this->db->insert('customer_installments', $input);
+
+                            // Replace with your Message content
+                            $msg = "Dear ".$data['name'].", we have received an installment Rs ".$input['amount']." of the month ". $item['month'].".";
+
+                            $msg .= " Contact for help on : +919765737487.";
+
+                            // Send message from send message service
+                            $this->load->model('Sendsms_model');
+                            $this->Sendsms_model->send_sms($msg, $data['mobile_number']);
                         } else {
                             $input['amount']        = $data['down_payment'];
                             $input['status']        = 'Pending';
@@ -91,11 +112,9 @@ class Customer_model extends CI_Model {
                     }
                 }
 
-
-
                 // Now send the text message if the customer mobile number is provided
                 if(isset($data['mobile_number'])) {
-                    
+                    $msg = '';
                     $msisdn  =  $data['mobile_number'];
                     $name = $data['name'];
 
@@ -112,16 +131,15 @@ class Customer_model extends CI_Model {
                         //     $msg .= ". Initial payment received of Rs $down_payment";
                         // }
                     } else {
-                        $msg = "Dear $name, you have been successfully registered for the HM Trading Fataka Fund Scheme as a agent. Contact for help on : +919765737487.";
+                        $msg = "Dear $name, you have been successfully registered for the HM Trading Fataka Fund Scheme as an agent. Contact for help on : +919765737487.";
                     }
-
 
                     // Send message from send message service
                     $this->load->model('Sendsms_model');
                     $this->Sendsms_model->send_sms($msg, $msisdn);
                 }
 
-                return $query;
+                return $customer;
             }
         } catch (Exception $e) {
             log_message('error',$e->getMessage());
@@ -153,6 +171,8 @@ class Customer_model extends CI_Model {
         }
 
         $this->db->limit($limit, $offset);
+        // Get only active records
+        $this->db->where('isActive', 1);
         $query = $this->db->get('customer');
         /* echo '<pre>';
         print_r($query);
@@ -211,7 +231,10 @@ class Customer_model extends CI_Model {
 
     // Delete customer details of the provided id
     function delete_customer_detail($params = array()) {
-        $query = $this->db->delete('customer', $params);
+        // Update customer table instead of deleting the records
+        $params['isActive'] = 0;
+        $this->db->where('customer_id', $params['customer_id']);
+        $query = $this->db->update('customer', $params);
         return $query;
     }
 
@@ -334,6 +357,7 @@ class Customer_model extends CI_Model {
                     isset($trans['amount']) ? $amount = $trans['amount'] : $amount = 0;
 
                     if($input['type'] == 'Saving') {
+                        // Template is working with Textlocal. Do not change.
                         $msg = "Dear $name, HM Trading has registered your saving account. Initial payment of Rs $amount received. Contact for help on : +919765737487";
                     } else {
                         $msg = "Dear $name, you have been successfully registered for the HM Trading loan scheme. An amount of Rs. $amount has been given to you.";     
@@ -349,7 +373,7 @@ class Customer_model extends CI_Model {
                 $result['customer_id']  = $customer_id;
                 $result['account_id']   = $account_id;
                 $result['transaction_id'] = $transaction_id;
-                $result['output'] = $output;
+                // $result['output'] = $output;
                 return $result;
             }
         } catch (Exception $e) {
@@ -430,6 +454,7 @@ class Customer_model extends CI_Model {
         if(sizeof($params)) {
             $this->db->like($params);
         }
+        $this->db->where('isActive', '1');
         $query = $this->db->get($db);
         $rowcount = $query->num_rows();
 

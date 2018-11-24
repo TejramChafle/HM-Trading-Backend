@@ -30,7 +30,23 @@ class Schemes_model extends CI_Model {
 
     // Delete customer details of the provided id
     function delete_scheme_detail($params = array()) {
-        $query = $this->db->delete('scheme', $params);
+        // Commenting. Since we'll not be deleting any records
+        // $query = $this->db->delete('scheme', $params);
+        // return $query;
+
+
+        // Update scheme table
+        $params['isActive'] = 0;
+        $this->db->where('scheme_id', $params['scheme_id']);
+        $query = $this->db->update('scheme', $params);
+
+
+        // Update scheme installments
+        $data = Array();
+        $data['scheme_id'] = $params['scheme_id'];
+        $data['isActive'] = 0;
+        $this->db->where('scheme_id', $data['scheme_id']);
+        $query = $this->db->update('scheme_installment', $data);
         return $query;
     }
 
@@ -43,14 +59,25 @@ class Schemes_model extends CI_Model {
                 $query = $this->db->update('scheme', $data);
                 return $query;
             } else {
+
+                
+                // Inactive the rest of scheme when adding new scheme
+                $params = Array();
+                $params['isActive'] = '0';
+                $this->db->update('scheme', $params);
+
+                // Inactivate the rest scheme installments
+                $query = $this->db->update('scheme_installment', $params);
+
+                // Once all other schemes are inactivated, register new scheme and new scheme installments    
                 $query = $this->db->insert('scheme', $data);
                 $insert_id = $this->db->insert_id();
 
                 // Now add the installments of this scheme in scheme-installment table
-                $year = date("Y");
+                // $year = date("Y");
 
-                // decreasing for for previous year
-                $year--;
+                // decreasing for previous year
+                $year = $data['year'] - 1;
 
                 // First we need to add december month data
                 $monthNum  = 12;

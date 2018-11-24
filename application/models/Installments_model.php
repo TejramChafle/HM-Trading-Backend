@@ -24,6 +24,7 @@ class Installments_model extends CI_Model {
         $this->db->order_by("card_number", "asc");
 
         $this->db->limit($limit, $offset);
+        $this->db->where('isActive', '1');
         $query = $this->db->get('customer');
         $query_result = array();
 
@@ -51,6 +52,7 @@ class Installments_model extends CI_Model {
             foreach($ci_query->result_array() as $insta) {
 
                 $this->db->where('scheme_installment_id', $insta['scheme_installment_id']);
+
                 $si_query = $this->db->get('scheme_installment');
                 
                 $result = $si_query->row_array();
@@ -153,12 +155,13 @@ class Installments_model extends CI_Model {
                 $installment = $amount;
 
                 // Replace with your Message content
-                $msg = "Dear $name, we have received installment Rs $installment of the month $month.";
+                $msg = "Dear $name, we have received an installment Rs $installment of the month $month.";
 
                 if($fine!=0) {
                     $msg .= " A fine of Rs $fine is imposed on you for late payment.";              
                 }
 
+                $msg .= " Contact for help on : +919765737487.";
 
                 // Send message from send message service
                 $this->load->model('Sendsms_model');
@@ -452,7 +455,6 @@ class Installments_model extends CI_Model {
 
         $this->db->where('account_id', $params['account_id']);
         $query = $this->db->get('loan_transactions');
-        // $result['transactions'] = $query->result_array();
         $transactions = $query->result_array();
 
         $this->db->where('account_id', $params['account_id']);
@@ -476,6 +478,56 @@ class Installments_model extends CI_Model {
         $result['customer'] = $query->row_array();
         
         return $result;
+
+        // $this->db->select('*');
+        // $this->db->from('loan_transactions');
+        // $this->db->join('loan_accounts','loan_accounts.account_id=loan_transactions.account_id');
+        // $this->db->where('loan_accounts.type',$params['type']);
+        // $this->db->where('loan_accounts.customer_id',$params['customer_id']);
+        // // $this->db->group_by("loan_accounts.account_id");
+        // $query = $this->db->get();
+        // $transactions = $query->result_array();
+
+        
+    }
+
+
+
+    // Get the list of all loan installments for the provided id 
+    function get_installment_history($params = array()) {
+        $response     = array();
+        $response['records'] = array();
+
+        $this->db->where('customer_id', $params['customer_id']);
+        $query = $this->db->get('loan_accounts');
+        $accounts = $query->result_array();
+        
+        foreach ($accounts as $key => $account) {
+            $this->db->where('account_id', $account['account_id']);
+            $query = $this->db->get('loan_transactions');
+            $transactions = $query->result_array();
+
+            $balances   = array();
+            $result     = array();
+
+            $account['type'] == 'Loan' ? $previous_balance = $account['amount'] : $previous_balance = 0;
+            foreach ($transactions as $value) {
+                $value['previous_balance'] = $previous_balance; 
+                $previous_balance   = $value['balance'];
+                $value['total']     = $value['amount'] + $value['interest_paid'] + $value['fine_paid'];
+                array_push($balances, $value);
+            }
+
+            $result['account']      = $account;
+            $result['transactions'] = $balances;
+            array_push($response['records'], $result);
+        }
+
+        $this->db->where('customer_id', $result['account']['customer_id']);
+        $query = $this->db->get('loan_customers');
+        $response['customer'] = $query->row_array();
+        
+        return $response;
     }
 
 
@@ -490,6 +542,8 @@ class Installments_model extends CI_Model {
         if(sizeof($params)) {
             $this->db->like($params);
         }
+
+        $this->db->where('isActive', '1');
         $query = $this->db->get($db);
         $rowcount = $query->num_rows();
 

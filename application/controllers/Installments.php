@@ -105,5 +105,15 @@ class Installments extends CI_Controller {
         }
     }
 
+    public function get_installment_history() {
+
+        $input_data = json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Installments_model');
+            $resp = $this->Installments_model->get_installment_history($input_data);
+            echo json_encode($resp);
+        }
+    }
+
 
 }

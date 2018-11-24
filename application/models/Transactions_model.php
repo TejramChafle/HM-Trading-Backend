@@ -229,9 +229,11 @@ class Transactions_model extends CI_Model {
         $input['customer_id']   = $params['customer_id'];
         $input['amount']        = $params['amount'];
         
-        $params['type'] == 'Loan' ? 
-        $input['balance'] = $params['balance'] - $params['amount'] : 
-        $input['balance'] = $params['balance'] + $params['amount'];
+        if($params['type'] == 'Loan'){
+            $input['balance'] = $params['balance'] - $params['amount'];    
+        } else {
+            $input['balance'] = $params['balance'] + $params['amount'];
+        }
         
         $input['type']          = $params['type'];
         $input['interest_paid'] = $params['interest_paid'];
@@ -248,25 +250,32 @@ class Transactions_model extends CI_Model {
             $name = $customer['name'];
             $amount = $params['amount'];
             $fine = $params['fine_paid'];
+            $interest_paid = $params['interest_paid'];
+            $balance = $input['balance'];
 
             // Replace with your Message content
             if($params['type'] == 'Loan') {
-                $msg = "Dear $name, HM Trading has received loan interest of Rs $amount.";
+                // $msg = "Dear $name, HM Trading has received loan interest of Rs $amount.";
+                $msg = "Dear $name, HM Trading has received a loan amount of Rs $amount, with interest of Rs $interest_paid.";
             } else {
-                $msg = "Dear $name, HM Trading has received saving amount of Rs $amount.";
+                // Template is working with Textlocal. Do not change.
+                $msg = "Dear $name, HM Trading has received a saving amount of Rs $amount.";
             }
 
             if($fine) {
+                // Template is working with Textlocal. Do not change.
                 $msg .= " A fine of Rs $fine has been imposed for late payment.";   
             }
 
             if($params['type'] == 'Loan') {
-                $msg .= " The remaining balance in your loan account is Rs ".$input['balance'];
+                $msg .= " The remaining balance in your loan account is Rs ".$input['balance'].'.';
             } else {
-                $msg .= " Total saving is Rs ".$input['balance'];
+                // Template is working with Textlocal. Do not change.
+                $msg .= " The total saving amount is Rs ".$input['balance'].'.';
             }
 
-            $msg .= " Contact for help: +919765737487.";
+            // Template is working with Textlocal. Do not change.
+            $msg .= " Contact for help on : +919765737487.";
 
             // Send message from send message service
             $this->load->model('Sendsms_model');
@@ -284,6 +293,24 @@ class Transactions_model extends CI_Model {
 
     // This function will add the installment for more than one customer to their last month
     function create_loan_account($params = array()) {
+
+        $this->db->where('customer_id', $params['customer_id']);
+        $this->db->where('type', 'Loan');
+        $query = $this->db->get('loan_transactions');
+        $loans = $query->row_array();
+
+        if(isset($loans) && $loans['balance']>0) {
+            return 'error: Balance loan amount from previous loan is Rs '.$loans['balance'];
+        } else {
+            $this->db->where('customer_id', $params['customer_id']);
+            $this->db->where('type', 'Loan');
+            $query = $this->db->get('loan_accounts');
+            $accounts = $query->row_array();
+
+            if(isset($accounts)) {
+                return 'error: Balance loan amount from previous loan is Rs '.$accounts['amount'];
+            }
+        }
         
         $this->db->where('customer_id', $params['customer_id']);
         $query = $this->db->get('loan_customers');
@@ -328,14 +355,17 @@ class Transactions_model extends CI_Model {
             $msisdn = $customer['phone'];
 
             // Replace with your Message content
-            $msg = "Dear $name, we have confirmed your loan for the amount of Rs. $amount. Contact for help: +919765737487.";
+            // $msg = "Dear $name, we have confirmed your loan for the amount of Rs. $amount. Contact for help: +919765737487.";
+
+            // Template is working with Textlocal. Do not change.
+            $msg = "Dear $name, HM Trading has registered your loan account. A loan amount of Rs. $amount has been given to you. Contact for help on : +919765737487";
             
             // Send message from send message service
             $this->load->model('Sendsms_model');
             $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
-        return  $insert_id;
+        return  'success: '.$insert_id;
     }
 
 
