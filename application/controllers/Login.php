@@ -13,21 +13,18 @@ class Login extends CI_Controller {
     }
 
     public function signIn() {
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
 
-        $input_data = $this->input->post();
-        $this->load->model('Login_model');
-        $login_details = $this->Login_model->sign_in($input_data);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Login_model');
+            $login_details = $this->Login_model->sign_in($input_data);
 
-        // echo '<pre>';
-        // print_r($login_details);
-        // echo '</pre>';
-
-        if($login_details!=null) {
-
-            $this->load->library('session');
-            $this->session->set_userdata('login_details', $login_details);
+            if ($login_details!=null) {
+                $this->load->library('session');
+                $this->session->set_userdata('login_details', $login_details);
+            }
+            echo json_encode($login_details);
         }
-        echo json_encode($login_details);
     }
     
     public function signOut() {

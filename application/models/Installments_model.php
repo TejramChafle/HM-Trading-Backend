@@ -16,15 +16,61 @@ class Installments_model extends CI_Model {
         $limit  = $params['limit'];
         $page   = $params['page'];
 
+        if (isset($params['card_number'])) {
+            $card_number = $params['card_number'];
+            unset($params['card_number']);
+        }
+        if (isset($params['item_id'])) {
+            $item_id = $params['item_id'];
+            unset($params['item_id']);
+        }
+        if (isset($params['agent_id'])) {
+            $agent_id = $params['agent_id'];
+            unset($params['agent_id']);
+        }
+
         unset($params['offset']);
         unset($params['limit']);
         unset($params['page']);
 
+        // PAGINATION
+        if (isset($card_number)) {
+            $this->db->where('card_number', $card_number);
+        }
+        if (isset($item_id)) {
+            $this->db->where('item_id', $item_id);
+        }
+        if (isset($agent_id)) {
+            $this->db->where('agent_id', $agent_id);
+        }
         $this->db->like($params);
-        $this->db->order_by("card_number", "asc");
-
-        $this->db->limit($limit, $offset);
         $this->db->where('isActive', '1');
+        $this->db->where('card_number IS NOT NULL', null, false);
+        $this->db->order_by("card_number", "asc");
+        $size = $this->db->count_all_results('customer');
+
+        $pagination = array();
+        $pagination['size'] = $size;
+        $pagination['page'] = $page;
+        $pagination['offset'] = $offset;
+
+
+        // SEARCH RESULT
+        if (isset($card_number)) {
+            $this->db->where('card_number', $card_number);
+        }
+        if (isset($item_id)) {
+            $this->db->where('item_id', $item_id);
+        }
+        if (isset($agent_id)) {
+            $this->db->where('agent_id', $agent_id);
+        }
+        $this->db->like($params);
+        $this->db->where('isActive', '1');
+        $this->db->where('card_number IS NOT NULL', null, false);
+        // $this->db->order_by("card_number", "asc");
+        $this->db->order_by("customer_id", "desc");
+        $this->db->limit($limit, $offset);
         $query = $this->db->get('customer');
         $query_result = array();
 
@@ -76,10 +122,10 @@ class Installments_model extends CI_Model {
 
         $return_result = array();
         
-        $params['database'] = 'customer';
-        $pagination = $this->pagination($params);
-        $pagination['page'] = $page;
-        $pagination['offset'] = $offset;
+        // $params['database'] = 'customer';
+        // $pagination = $this->pagination($params);
+        // $pagination['page'] = $page;
+        // $pagination['offset'] = $offset;
         
         $return_result['records'] = $query_result;
         $return_result['pagination'] = $pagination;
@@ -295,11 +341,11 @@ class Installments_model extends CI_Model {
         $this->db->set('has_won_draw', 1);
         $this->db->set('lucky_draw_item', $params['item_id']);
         $this->db->set('lucky_draw_month', $month);
-        $query = $this->db->update('customer');
+        $update_query = $this->db->update('customer');
 
-        $this->db->where('item_id', $params['item_id']);
-        $this->db->set('status', 'NA');
-        $query = $this->db->update('item');
+        // $this->db->where('item_id', $params['item_id']);
+        // $this->db->set('status', 'NA');
+        // $query = $this->db->update('item');
 
 
         // Get the item details
@@ -349,7 +395,7 @@ class Installments_model extends CI_Model {
             }
         }
 
-        return $output;
+        return $update_query;
     }
 
 
@@ -385,13 +431,59 @@ class Installments_model extends CI_Model {
         unset($params['limit']);
         unset($params['page']);
 
-        if(sizeof($params)){
+        // Filter by receipt_id
+        if (isset($params['receipt_id'])) {
+            $receipt_id = $params['receipt_id'];
+            unset($params['receipt_id']);
+        }
+        // Filter by receipt_id
+        if (isset($params['card_number'])) {
+            $card_number = $params['card_number'];
+            unset($params['card_number']);
+        }
+
+
+        //PAGINATION 
+        // Filter by receipt_id
+        if (isset($receipt_id)) {
+            $this->db->where('receipt_id', $receipt_id);
+        }
+        // Filter by receipt_id
+        if (isset($params['card_number'])) {
+            $this->db->where('card_number', $card_number);
+        }
+        if (sizeof($params)) {
+            $this->db->like($params);
+        }
+        
+        $this->db->order_by("receipt_date", "desc");
+        $size = $this->db->count_all_results('receipt');
+
+        $pagination = array();
+        $pagination['size'] = $size;
+        $pagination['page'] = $page;
+        $pagination['offset'] = $offset;
+
+
+
+        // SEARCH RESULT 
+        // Filter by receipt_id
+        if (isset($receipt_id)) {
+            $this->db->where('receipt_id', $receipt_id);
+        }
+        // Filter by receipt_id
+        if (isset($params['card_number'])) {
+            $this->db->where('card_number', $card_number);
+        }
+        if (sizeof($params)) {
             $this->db->like($params);
         }
         
         $this->db->order_by("receipt_date", "desc");
         $this->db->limit($limit, $offset);
         $query = $this->db->get('receipt');
+
+
         $payments = array();
 
         foreach($query->result_array() as $item) {
@@ -423,17 +515,11 @@ class Installments_model extends CI_Model {
                 array_push($data, $query->row_array());
             }
 
-            $item['payments'] = $params;
+            $item['payments'] = $data;
             $item['amount'] = $amount;
 
             array_push($payments, $item);
         }
-
-        $return_result = array();
-        $params['database'] = 'receipt';
-        $pagination = $this->pagination($params);
-        $pagination['page'] = $page;
-        $pagination['offset'] = $offset;
 
         $return_result = array();
         $return_result['records'] = $payments;

@@ -85,4 +85,15 @@ class Customer extends CI_Controller {
     }
 
 
+    // Soft delete of the loan customer by changing flag isActive flag from 1 to 0   
+    public function delete_loan_customer() {
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
+
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Customer_model');
+            $resp = $this->Customer_model->delete_loan_customer($input_data);
+            echo json_encode($resp);
+        }
+    }
+
 }

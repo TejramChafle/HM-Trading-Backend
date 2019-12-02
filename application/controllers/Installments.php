@@ -115,5 +115,4 @@ class Installments extends CI_Controller {
         }
     }
 
-
 }

@@ -19,9 +19,57 @@ class Transactions_model extends CI_Model {
         $limit  = $data['limit'];
         $page   = $data['page'];
 
+        // Filter by receipt number/transaction id
+        if (isset($data['transaction_id'])) {
+            $transaction_id = $data['transaction_id'];
+            unset($data['transaction_id']);
+        }
+        // Filter by account id
+        if (isset($data['account_id'])) {
+            $account_id = $data['account_id'];
+            unset($data['account_id']);
+        }
+
         unset($data['offset']);
         unset($data['limit']);
         unset($data['page']);
+
+
+        // PAGINATION
+        // Filter by receipt number/transaction id
+        if (isset($transaction_id)) {
+            $this->db->where('transaction_id', $transaction_id);
+        }
+        // Filter by account id
+        if (isset($account_id)) {
+            $this->db->where('account_id', $account_id);
+        }
+
+        if(sizeof($data) && !isset($data['customer_id']) ){
+            $this->db->like($data);
+        } else if(isset($data['customer_id'])) {
+            $this->db->where('customer_id', $data['customer_id']);
+        } 
+
+        $this->db->order_by("created_date", "desc");
+        $size = $this->db->count_all_results('loan_transactions');
+
+        $pagination = array();
+        $pagination['size'] = $size;
+        $pagination['page'] = $page;
+        $pagination['offset'] = $offset;
+
+
+
+        // SEARCH RESULT
+        // Filter by receipt number/transaction id
+        if (isset($transaction_id)) {
+            $this->db->where('transaction_id', $transaction_id);
+        }
+        // Filter by account id
+        if (isset($account_id)) {
+            $this->db->where('account_id', $account_id);
+        }
 
         if(sizeof($data) && !isset($data['customer_id']) ){
             $this->db->like($data);
@@ -93,11 +141,11 @@ class Transactions_model extends CI_Model {
                 array_push($result, $item);
             }
 
-            $params = array();
-            $data['database'] = 'loan_transactions';
-            $pagination = $this->pagination($data);
-            $pagination['page'] = $page;
-            $pagination['offset'] = $offset;
+            // $params = array();
+            // $data['database'] = 'loan_transactions';
+            // $pagination = $this->pagination($data);
+            // $pagination['page'] = $page;
+            // $pagination['offset'] = $offset;
 
             $return_result = array();
             $return_result['records'] = $result;
@@ -297,21 +345,32 @@ class Transactions_model extends CI_Model {
         $this->db->where('customer_id', $params['customer_id']);
         $this->db->where('type', 'Loan');
         $query = $this->db->get('loan_transactions');
-        $loans = $query->row_array();
 
-        if(isset($loans) && $loans['balance']>0) {
+        $loans = json_decode(json_encode($query->last_row()), True);
+
+        if (isset($loans) && $loans['balance']==0) {
+            $insert_id = $this->save_loan_account($params);
+            return  'success: '.$insert_id;
+        } else if(isset($loans) && $loans['balance']>0) {
             return 'error: Balance loan amount from previous loan is Rs '.$loans['balance'];
         } else {
             $this->db->where('customer_id', $params['customer_id']);
             $this->db->where('type', 'Loan');
             $query = $this->db->get('loan_accounts');
-            $accounts = $query->row_array();
-
-            if(isset($accounts)) {
+            // $accounts = $query->row_array();
+            $accounts = json_decode(json_encode($query->last_row()), True);
+            if (isset($accounts)) {
                 return 'error: Balance loan amount from previous loan is Rs '.$accounts['amount'];
+            } else {
+                $insert_id = $this->save_loan_account($params);
+                return  'success: '.$insert_id;
             }
         }
-        
+    }
+
+
+    // Create and Save the loan account information
+    function save_loan_account($params = array()) {
         $this->db->where('customer_id', $params['customer_id']);
         $query = $this->db->get('loan_customers');
         $customer = $query->row_array();
@@ -337,15 +396,16 @@ class Transactions_model extends CI_Model {
         $insert_id = $this->db->insert_id(); 
 
 
-        /*$installments = array();
-        $installments = json_decode($params['installments']);
+        // $installments = array();
+        // $installments = json_decode($params['installments']);
 
-        // Now add the new record to loan_installments
-        foreach ($installments as $value) {
-            $value->paid_status = 'Unpaid';
-            $value->account_id  = $insert_id;
-            $query = $this->db->insert('loan_installments', $value);
-        }*/
+        // // Now add the new record to loan_installments
+        // foreach ($installments as $value) {
+        //     $value->paid_status = 'Unpaid';
+        //     $value->account_id  = $insert_id;
+        //     $query = $this->db->insert('loan_installments', $value);
+        // }
+
 
         if(isset($customer['phone'])) {
 
@@ -365,7 +425,7 @@ class Transactions_model extends CI_Model {
             $this->Sendsms_model->send_sms($msg, $msisdn);
         }
 
-        return  'success: '.$insert_id;
+        return $insert_id;
     }
 
 

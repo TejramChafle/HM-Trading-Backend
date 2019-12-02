@@ -20,26 +20,23 @@ class Items_model extends CI_Model {
         unset($data['limit']);
         unset($data['page']);
         
-        $this->db->limit($limit, $offset);
-        $query = $this->db->get('item');
-
-        $return_result = array();
-        
-        $data['database'] = 'item';
-        $this->load->model('Customer_model');
-        $pagination = $this->Customer_model->pagination($data); 
-
+        //PAGINATION
+        $size = $this->db->count_all_results('item');
+        $pagination = array();
+        $pagination['size'] = $size;
         $pagination['page'] = $page;
         $pagination['offset'] = $offset;
-        
+
+        // SEARCH RESULT
+        $this->db->limit($limit, $offset);
+        $this->db->order_by("item_id", "desc");
+        $query = $this->db->get('item');
+            
+        $return_result = array();    
         $return_result['records'] = $query->result_array();
         $return_result['pagination'] = $pagination;
 
         return $return_result;
-
-        // $this->load->model('Customer_model');
-        // $resp = $this->Customer_model->pagination($input_data); 
-        // return $query->result_array();
     }
 
 

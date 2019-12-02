@@ -9,9 +9,12 @@ class Login_model extends CI_Model {
         print_r($data);
         echo '</pre>'; */
         $this->load->database();
-        $data['password'] = md5($data['password']);
-        
-        $query = $this->db->get_where('system_users', $data);
+        $password = md5($data['password']);
+        // $query = $this->db->get_where('system_users', $data);
+
+        $this->db->where('username', $data['username']);
+        $this->db->where('password', $password);
+        $query = $this->db->get('system_users');
 
         /* echo '<pre>';
         print_r($query->row_array());
