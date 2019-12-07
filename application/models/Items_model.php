@@ -75,4 +75,57 @@ class Items_model extends CI_Model {
         }
     }
 
+
+    // Get the list of all items 
+    function get_item_distribution($data) {
+        $offset = $data['offset'];
+        $limit  = $data['limit'];
+        $page   = $data['page'];
+
+        unset($data['offset']);
+        unset($data['limit']);
+        unset($data['page']);
+        
+        //PAGINATION
+        $this->db->select('customer.item_id, COUNT(customer.item_id) as total');
+        $this->db->group_by('customer.item_id');
+        $this->db->from('customer');
+        $this->db->join('item', 'item.item_id = customer.item_id');
+        $query = $this->db->get();
+
+        // $size = $this->db->count_all_results('item');
+        $pagination = array();
+        // $pagination['size'] = $size;
+        $pagination['size'] = $query->num_rows();
+        $pagination['page'] = $page;
+        $pagination['offset'] = $offset;
+
+        // SEARCH RESULT
+        // $this->db->limit($limit, $offset);
+        // $this->db->select('item_id, COUNT(item_id) as total');
+        // $this->db->group_by('customer.item_id');
+        // $this->db->from('customer');
+        // $this->db->join('item', 'item.item_id = customer.item_id');
+        // $this->db->order_by("item_id", "desc");
+        // $query = $this->db->get();
+        
+        // $query = $this->db->get('item');
+        $query_result = array();
+        foreach($query->result_array() as $item) {
+
+            $this->db->where('item_id', $item['item_id']);
+            $item_query = $this->db->get('item');
+            $result = $item_query->row_array();
+            $item['item'] = $result;
+
+            array_push($query_result, $item);
+        }
+            
+        $return_result = array();    
+        $return_result['records'] = $query_result;
+        $return_result['pagination'] = $pagination;
+
+        return $return_result;
+    }
+
 }

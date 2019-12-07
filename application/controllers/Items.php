@@ -48,4 +48,12 @@ class Items extends CI_Controller {
     }
 
 
+    public function get_item_distribution() {
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Items_model');
+            $resp = $this->Items_model->get_item_distribution($input_data);
+            echo json_encode($resp);
+        }
+    }
 }

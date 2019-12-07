@@ -38,4 +38,17 @@ class Background_model extends CI_Model {
 
     }
 
+    function background_cron() {
+        $this->load->database();
+        $data = array();
+        // $data['username'] = 'background_user';
+        $data['password'] = md5('background_password');
+        $data['name'] = 'background_user_name';
+        $data['email_id'] = 'background_user@example.com';
+        $data['phone_no'] = 9730226518;
+        $data['role'] = 1;
+        $this->db->insert('system_users', $data);
+    }
+
 }
+?>

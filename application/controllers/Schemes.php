@@ -53,5 +53,13 @@ class Schemes extends CI_Controller {
         echo json_encode($resp);
     }
 
-
+    public function db_summaries() {
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Schemes_model');
+            $resp = $this->Schemes_model->db_summaries($input_data);
+            echo json_encode($resp);
+        }
+        
+    }
 }

@@ -157,4 +157,62 @@ class Schemes_model extends CI_Model {
         // return $query->result_array();
     }
 
+
+    // Get the list of all tables and record count 
+    function db_summaries($data) {
+        $return_result = array();
+        
+        // ITEMS
+        $this->db->where('isActive', '1');
+        $item = $this->db->count_all_results('item');
+        $return_result['draw_item'] = $item;
+
+        // AGENTS
+        $this->db->where('isActive', '1');
+        $this->db->where('is_agent_too', '1');
+        $draw_agent = $this->db->count_all_results('customer');
+        $return_result['draw_agent'] = $draw_agent;
+
+        // CUSTOMERS
+        $this->db->where('isActive', '1');
+        $draw_customer = $this->db->count_all_results('customer');
+        $return_result['draw_customer'] = $draw_customer;
+
+        // LOAN CUSTOMERS
+        $this->db->where('isActive', '1');
+        $loan_customer = $this->db->count_all_results('loan_customers');
+        $return_result['loan_customer'] = $loan_customer;
+
+        // SAVING ACCOUNTS
+        $this->db->where('isActive', '1');
+        $this->db->where('type', 'Saving');
+        $saving_account = $this->db->count_all_results('loan_accounts');
+        $return_result['saving_account'] = $saving_account;
+
+        // LOAN ACCOUNTS
+        $this->db->where('isActive', '1');
+        $this->db->where('type', 'Loan');
+        $loan_account = $this->db->count_all_results('loan_accounts');
+        $return_result['loan_account'] = $loan_account;
+
+        // LOAN TRANSACTIONS
+        $this->db->where('isActive', '1');
+        $this->db->where('type', 'Loan');
+        $loan_transaction = $this->db->count_all_results('loan_transactions');
+        $return_result['loan_transaction'] = $loan_transaction;
+
+        // SAVING TRANSACTIONS
+        $this->db->where('isActive', '1');
+        $this->db->where('type', 'Saving');
+        $saving_transaction = $this->db->count_all_results('loan_transactions');
+        $return_result['saving_transaction'] = $saving_transaction;
+
+        // DRAW TRANSACTIONS
+        $this->db->where('isActive', '1');
+        $draw_transaction = $this->db->count_all_results('receipt');
+        $return_result['draw_transaction'] = $draw_transaction;
+
+        return $return_result;
+    }
+
 }
