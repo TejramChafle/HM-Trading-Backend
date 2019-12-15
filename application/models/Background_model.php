@@ -1,7 +1,4 @@
 <?php
-
-defined('BASEPATH') OR exit('No direct script access allowed');
-
 class Background_model extends CI_Model {
 
     public function __construct() {
@@ -41,7 +38,7 @@ class Background_model extends CI_Model {
     function background_cron() {
         $this->load->database();
         $data = array();
-        // $data['username'] = 'background_user';
+        $data['username'] = 'background_user';
         $data['password'] = md5('background_password');
         $data['name'] = 'background_user_name';
         $data['email_id'] = 'background_user@example.com';

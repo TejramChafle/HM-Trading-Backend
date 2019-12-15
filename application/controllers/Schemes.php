@@ -60,6 +60,29 @@ class Schemes extends CI_Controller {
             $resp = $this->Schemes_model->db_summaries($input_data);
             echo json_encode($resp);
         }
-        
     }
+
+
+    /*---------------------------------------------------------------------------------------
+        : GET message deleivery report from text-local server
+    ----------------------------------------------------------------------------------------*/
+    public function messages_report() {
+        $input_data = $this->input->get();
+        $this->load->model('Sendsms_model');
+        $resp = $this->Sendsms_model->messages_report();
+        // echo json_encode($resp);
+        echo $resp;
+    }
+
+
+    /*---------------------------------------------------------------------------------------
+        : GET message credit available from textlocal.in
+    ----------------------------------------------------------------------------------------*/
+    public function check_message_credit() {
+        $input_data = $this->input->get();
+        $this->load->model('Sendsms_model');
+        $resp = $this->Sendsms_model->check_message_credit();
+        echo $resp;
+    }
+
 }

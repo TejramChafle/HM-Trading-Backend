@@ -234,7 +234,11 @@ class Customer_model extends CI_Model {
         }
         // Get only active records
         $this->db->where('isActive', 1);
-        $this->db->order_by("customer_id", "desc");
+        if (isset( $agent_id)) {
+            $this->db->order_by("card_number", "asc");
+        } else {
+            $this->db->order_by("customer_id", "desc");    
+        }
         $this->db->limit($limit, $offset);
         $query = $this->db->get('customer');
 

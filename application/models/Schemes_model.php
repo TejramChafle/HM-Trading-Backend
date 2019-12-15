@@ -175,6 +175,7 @@ class Schemes_model extends CI_Model {
 
         // CUSTOMERS
         $this->db->where('isActive', '1');
+        $this->db->where('card_number IS NOT NULL', null, false);
         $draw_customer = $this->db->count_all_results('customer');
         $return_result['draw_customer'] = $draw_customer;
 

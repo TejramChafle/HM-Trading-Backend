@@ -46,7 +46,6 @@ class Installments_model extends CI_Model {
         $this->db->like($params);
         $this->db->where('isActive', '1');
         $this->db->where('card_number IS NOT NULL', null, false);
-        $this->db->order_by("card_number", "asc");
         $size = $this->db->count_all_results('customer');
 
         $pagination = array();
@@ -68,8 +67,11 @@ class Installments_model extends CI_Model {
         $this->db->like($params);
         $this->db->where('isActive', '1');
         $this->db->where('card_number IS NOT NULL', null, false);
-        // $this->db->order_by("card_number", "asc");
-        $this->db->order_by("customer_id", "desc");
+        if (isset( $agent_id)) {
+            $this->db->order_by("card_number", "asc");
+        } else {
+            $this->db->order_by("customer_id", "desc");    
+        }
         $this->db->limit($limit, $offset);
         $query = $this->db->get('customer');
         $query_result = array();
@@ -619,22 +621,45 @@ class Installments_model extends CI_Model {
 
 
     /*---------------------------------------------------------------------------------------
-        : Initialize the pagination for records
+        : GET the list of pending installlments for the provided month
     ----------------------------------------------------------------------------------------*/
-    function pagination($params = array()) {
-        $db = $params['database'];
-        unset($params['database']);
+    function get_pending_installments($params = array()) {
 
-        if(sizeof($params)) {
-            $this->db->like($params);
-        }
+        /*
+        $this->db->select('*');
+        // $this->db->where('has_won_draw', 0);
+        $this->db->from('customer');
+        $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
+        $this->db->join('customer_installments', 'customer_installments.customer_id !== customer.customer_id', 'left');
+        $query = $this->db->get();
+        */
 
+        $this->db->select('customer_id');
+        $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
+        $query = $this->db->get('customer_installments');
+
+        $paid_customer_ids = $query->result_array();
+
+        $this->db->where_not_in('customer_id', array_column($paid_customer_ids, 'customer_id'));
+        $this->db->where('card_number IS NOT NULL', null, false);
         $this->db->where('isActive', '1');
-        $query = $this->db->get($db);
-        $rowcount = $query->num_rows();
+        $this->db->order_by("agent_id", "asc");
+        $query = $this->db->get('customer');
 
+        // return $query->result_array();
         $result = array();
-        $result['size'] = $rowcount;
+        foreach($query->result_array() as $customer) {
+
+            $this->db->where('item_id', $customer['item_id']);
+            $query = $this->db->get('item');
+            $customer['item'] = $query->row_array();
+
+            $this->db->where('customer_id', $customer['agent_id']);
+            $query = $this->db->get('customer');
+            $customer['agent'] = $query->row_array();
+
+            array_push($result, $customer);
+        }
         return $result;
     }
 

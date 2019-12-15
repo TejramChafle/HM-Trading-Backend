@@ -9,84 +9,85 @@ class Sendsms_model extends CI_Model {
     }
 
 
-    // Add the item details in db
+    
+    /*---------------------------------------------------------------------------------------
+        : Textlocal message implementation [This is working code copied from text local API]
+    ----------------------------------------------------------------------------------------*/
     function send_sms($msg, $msisdn) {
-        // SmsIndiaHub message implementation
-        /*$sid  =  "HMTRAD"; 
-        $user = "HMTrading";
-        $password = "mailme24hr"; 
-        $msg = urlencode($msg);
-        
-        $fl = "0";
-        $type   =  "txt";
-        $ch = curl_init("http://cloud.smsindiahub.in/vendorsms/pushsms.aspx?user=".$user."&password=".$password."&msisdn=".$msisdn."&sid=".$sid."&msg=".$msg."&fl=".$fl); 
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $output = curl_exec($ch);      
-        curl_close($ch); */
 
-
-        // Textlocal message implementation
-
-        // Account details
+        /*// Account details
         $apiKey = urlencode('9FUGpx76Lv4-co6Tv7eY1O585eevwfyasTQu3ind1N');
-        
-        // // Message details
-        // $numbers = array('91'+$msisdn);
+
+        // Message detail
         $sender  = urlencode('HMTRAD');
-
-        // $message = 'Dear Tejram Chafle Cname, HM Trading has confirmed your loan for the amount of Rs. 1200 Lamount. Contact for help on: +919765737487.';
         $message = rawurlencode($msg);
-        // $numbers = implode(',', $numbers);
-
         $numbers = '91'.$msisdn;
+        // $numbers = implode(',', $numbers);
      
         // Prepare data for POST request
         $data = array('apikey' => $apiKey, 'numbers' => $numbers, "sender" => $sender, "message" => $message);
      
         // Send the POST request with cURL
-        // $ch = curl_init('https://api.textlocal.in/send/');
-        // curl_setopt($ch, CURLOPT_POST, true);
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // $response = curl_exec($ch);
-        // curl_close($ch);
-
-        // // Process your response here
-        // echo $response;      
-
-        // Authorisation details.
-        // $username = "tejram_chafle@yahoo.in";
-        // $hash = "9FUGpx76Lv4-co6Tv7eY1O585eevwfyasTQu3ind1N";
-
-        // // Config variables. Consult http://api.textlocal.in/docs for more info.
-        // $test = "0";
-
-        // // Data for text message. This is the text message data.
-        // $sender = "HMTRAD";
-        // // $sender = "TXTLCL"; // This is who the message appears to be from.
-        // $numbers = "919730226518"; // A single number or a comma-seperated list of numbers
-        // // $message = "This is a test message from the PHP API script.";
-        // // 612 chars or less
-        // // A single number or a comma-seperated list of numbers
-        // $message = urlencode($message);
-        // $data = "username=".$username."&hash=".$hash."&message=".$message."&sender=".$sender."&numbers=".$numbers."&test=".$test;
-        // $ch = curl_init('http://api.textlocal.in/send/?');
-        // curl_setopt($ch, CURLOPT_POST, true);
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // $response = curl_exec($ch); // This is the result from the API
-
-        // echo "<pre>";
-        // echo $msg;
-        // print_r($data);
-        // print_r($response);
-        // echo "</pre>";
-
-        // curl_close($ch);
+        $ch = curl_init('https://api.textlocal.in/send/');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+        curl_close($ch);
 
         // Process your response here
-        // echo $response;
+        echo $response;*/
+    }
+
+
+
+
+
+    /*---------------------------------------------------------------------------------------
+        : GET message deleivery report from text-local server
+    ----------------------------------------------------------------------------------------*/
+    function messages_report () {
+            // Account details
+            $apiKey = urlencode('9FUGpx76Lv4-co6Tv7eY1O585eevwfyasTQu3ind1N');
+         
+            // Prepare data for POST request
+            $data = array('apikey' => $apiKey);
+         
+            // Send the POST request with cURL
+            $ch = curl_init('https://api.textlocal.in/get_history_api/');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+            curl_close($ch);
+            
+            // Process your response here
+            return $response;
+    }
+
+
+
+
+
+    /*---------------------------------------------------------------------------------------
+        : GET message credit available from textlocal.in
+    ----------------------------------------------------------------------------------------*/
+    function check_message_credit() {
+        // Authorisation details.   
+        $username = "tejram_chafle@yahoo.in";
+        $hash = "f3d3a31b285f4c931ddede0acae738986364a40046e38344bc98045c3800e798";
+        
+        // You shouldn't need to change anything here.  
+        $data = "username=".$username."&hash=".$hash;
+        $ch = curl_init('http://api.textlocal.in/balance/?');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $credits = curl_exec($ch);
+        // This is the number of credits you have left  
+        curl_close($ch);
+        // echo $credits;
+        return $credits;
     }
 
 }

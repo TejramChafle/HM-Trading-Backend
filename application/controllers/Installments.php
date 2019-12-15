@@ -115,4 +115,16 @@ class Installments extends CI_Controller {
         }
     }
 
+
+    // GET the list of pending installment for the specified month
+    public function get_pending_installments() {
+
+        $input_data = json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Installments_model');
+            $resp = $this->Installments_model->get_pending_installments($input_data);
+            echo json_encode($resp);
+        }
+    }
+
 }
