@@ -456,7 +456,7 @@ class Customer_model extends CI_Model {
         }
 
         // PAGINATION
-        if (isset($account_number)) {
+        /*if (isset($account_number)) {
             $this->db->where('account_number', $account_number);
         }
         if(sizeof($data)) {
@@ -468,11 +468,25 @@ class Customer_model extends CI_Model {
         $pagination = array();
         $pagination['size'] = $size;
         $pagination['page'] = $page;
+        $pagination['offset'] = $offset;*/
+
+        
+        $this->db->select('*');
+        $this->db->where('loan_customers.isActive', 1);
+        $this->db->from('loan_customers');
+        $this->db->where('loan_accounts.type', $data['type']);
+        $this->db->where('loan_accounts.isActive', 1);
+        $this->db->join('loan_accounts', 'loan_customers.customer_id = loan_accounts.customer_id');
+        // $this->db->group_by('loan_customers.customer_id');
+        $size = $this->db->count_all_results();
+
+        $pagination = array();
+        $pagination['size'] = $size;
+        $pagination['page'] = $page;
         $pagination['offset'] = $offset;
 
-
         // SEARCH RESULT
-        if (isset($account_number)) {
+        /*if (isset($account_number)) {
             $this->db->where('account_number', $account_number);
         }
         if(sizeof($data)) {
@@ -503,7 +517,20 @@ class Customer_model extends CI_Model {
             }
 
             array_push($query_result, $item);
-        }
+        }*/
+
+
+        $this->db->select('*');
+        // $this->db->distinct('loan_customers.customer_id');
+        $this->db->where('loan_customers.isActive', 1);
+        $this->db->like($data);
+        $this->db->from('loan_customers');
+        $this->db->where('loan_accounts.type', $data['type']);
+        $this->db->where('loan_accounts.isActive', 1);
+        $this->db->join('loan_accounts', 'loan_customers.customer_id = loan_accounts.customer_id');
+        $this->db->group_by('loan_customers.customer_id');
+        $query = $this->db->get();
+        $query_result = $query->result_array();
         
         $return_result['records'] = $query_result;
         $return_result['pagination'] = $pagination;
@@ -542,6 +569,10 @@ class Customer_model extends CI_Model {
         $params['isActive'] = 0;
         $this->db->where('customer_id', $params['customer_id']);
         $query = $this->db->update('loan_customers', $params);
+
+        // Also deactivate the accounts of the customer
+        $this->db->where('customer_id', $params['customer_id']);
+        $query = $this->db->update('loan_accounts', $params);
         return $query;
     }
 }

@@ -56,4 +56,11 @@ class Items extends CI_Controller {
             echo json_encode($resp);
         }
     }
+
+    // Get the item & count list assigned to lucky customer
+    public function get_draw_customer_item_distribution() {
+        $this->load->model('Items_model');
+        $resp = $this->Items_model->get_draw_customer_item_distribution();
+        echo json_encode($resp);
+    }
 }

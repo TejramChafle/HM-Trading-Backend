@@ -589,9 +589,9 @@ class Installments_model extends CI_Model {
         $this->db->where('customer_id', $params['customer_id']);
         $query = $this->db->get('loan_accounts');
         $accounts = $query->result_array();
-        
         foreach ($accounts as $key => $account) {
             $this->db->where('account_id', $account['account_id']);
+            $this->db->order_by('transaction_id', 'ASC');
             $query = $this->db->get('loan_transactions');
             $transactions = $query->result_array();
 
@@ -610,10 +610,6 @@ class Installments_model extends CI_Model {
             $result['transactions'] = $balances;
             array_push($response['records'], $result);
         }
-
-        $this->db->where('customer_id', $result['account']['customer_id']);
-        $query = $this->db->get('loan_customers');
-        $response['customer'] = $query->row_array();
         
         return $response;
     }
@@ -625,42 +621,82 @@ class Installments_model extends CI_Model {
     ----------------------------------------------------------------------------------------*/
     function get_pending_installments($params = array()) {
 
-        /*
-        $this->db->select('*');
-        // $this->db->where('has_won_draw', 0);
-        $this->db->from('customer');
-        $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
-        $this->db->join('customer_installments', 'customer_installments.customer_id !== customer.customer_id', 'left');
-        $query = $this->db->get();
-        */
-
         $this->db->select('customer_id');
         $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
         $query = $this->db->get('customer_installments');
 
         $paid_customer_ids = $query->result_array();
 
-        $this->db->where_not_in('customer_id', array_column($paid_customer_ids, 'customer_id'));
-        $this->db->where('card_number IS NOT NULL', null, false);
-        $this->db->where('isActive', '1');
-        $this->db->order_by("agent_id", "asc");
-        $query = $this->db->get('customer');
+        if (sizeof($paid_customer_ids)) {
+            $this->db->where_not_in('customer_id', array_column($paid_customer_ids, 'customer_id'));
+            $this->db->where('card_number IS NOT NULL', null, false);
+            $this->db->where('isActive', '1');
+            $this->db->order_by("agent_id", "asc");
+            $query = $this->db->get('customer');
+        }
 
         // return $query->result_array();
         $result = array();
-        foreach($query->result_array() as $customer) {
 
-            $this->db->where('item_id', $customer['item_id']);
-            $query = $this->db->get('item');
-            $customer['item'] = $query->row_array();
+        if (sizeof($query->result_array())) {
+            foreach($query->result_array() as $customer) {
+                $this->db->where('item_id', $customer['item_id']);
+                $query = $this->db->get('item');
+                $customer['item'] = $query->row_array();
 
-            $this->db->where('customer_id', $customer['agent_id']);
-            $query = $this->db->get('customer');
-            $customer['agent'] = $query->row_array();
+                $this->db->where('customer_id', $customer['agent_id']);
+                $query = $this->db->get('customer');
+                $customer['agent'] = $query->row_array();
 
-            array_push($result, $customer);
+                array_push($result, $customer);
+            }
         }
         return $result;
     }
 
+
+
+    /*---------------------------------------------------------------------------------------
+        : GET the list of loan customers with the pending installments for more than month
+    ----------------------------------------------------------------------------------------*/
+    function get_pending_loan_installment_customers($params = array()) {
+
+        $query = "SELECT DISTINCT * FROM loan_customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM loan_transactions WHERE type=? AND created_date BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()) AND isActive=1";
+        $query_result = $this->db->query($query, array($params['type']));
+
+        $pagination_records = array();
+        foreach ($query_result->result_array() as $customer) {
+            $query = "SELECT * FROM loan_accounts WHERE customer_id =? AND type=? AND isActive = 1";
+            $customer_account = $this->db->query($query, array($customer['customer_id'], $params['type']));
+            if(sizeof($customer_account->result_array())) {
+                array_push($pagination_records, $customer);
+            }
+        }
+
+        $pagination = array();
+        $pagination['size'] = sizeof($pagination_records);
+        $pagination['page'] = $params['page'];
+        $pagination['offset'] = $params['offset'];
+
+        $return_result = array();
+        $return_result['pagination'] = $pagination;
+
+        $query = "SELECT DISTINCT * FROM loan_customers WHERE customer_id NOT IN (SELECT DISTINCT customer_id FROM loan_transactions WHERE type=? AND created_date BETWEEN CURDATE() - INTERVAL 30 DAY AND CURDATE()) AND isActive=1 LIMIT ?,?";
+        $query_result = $this->db->query($query, array($params['type'], $params['offset'], intval($params['limit'])));
+
+        $records = array();
+        foreach ($query_result->result_array() as $customer) {
+            $query = "SELECT * FROM loan_accounts WHERE customer_id =? AND type=? AND isActive = 1";
+            $customer_account = $this->db->query($query, array($customer['customer_id'], $params['type']));
+            if(sizeof($customer_account->result_array())) {
+                $query = "SELECT created_date FROM loan_transactions WHERE customer_id = ? AND type=? AND balance>0 ORDER BY created_date DESC LIMIT 1";
+                $last_installment_paid = $this->db->query($query, array($customer['customer_id'], $params['type']));
+                $customer['last_installment_paid_date'] = null !== $last_installment_paid->row_array() ? $last_installment_paid->row_array()['created_date'] : $last_installment_paid->row_array();
+                $customer['account_created_date'] = $customer_account->row_array()['created_date'];
+                array_push($records, $customer);
+            }
+        }
+        $return_result['records'] = $records; 
+        return $return_result;
+    }
 }

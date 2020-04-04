@@ -67,11 +67,13 @@ class Schemes extends CI_Controller {
         : GET message deleivery report from text-local server
     ----------------------------------------------------------------------------------------*/
     public function messages_report() {
-        $input_data = $this->input->get();
-        $this->load->model('Sendsms_model');
-        $resp = $this->Sendsms_model->messages_report();
-        // echo json_encode($resp);
-        echo $resp;
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Sendsms_model');
+            $resp = $this->Sendsms_model->messages_report($input_data);
+            // echo json_encode($resp);
+            echo $resp;
+        }
     }
 
 

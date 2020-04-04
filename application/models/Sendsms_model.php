@@ -15,7 +15,8 @@ class Sendsms_model extends CI_Model {
     ----------------------------------------------------------------------------------------*/
     function send_sms($msg, $msisdn) {
 
-        /*// Account details
+        // Account details
+        /*
         $apiKey = urlencode('9FUGpx76Lv4-co6Tv7eY1O585eevwfyasTQu3ind1N');
 
         // Message detail
@@ -34,9 +35,10 @@ class Sendsms_model extends CI_Model {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
+        */
 
         // Process your response here
-        echo $response;*/
+        // echo $response;
     }
 
 
@@ -46,12 +48,12 @@ class Sendsms_model extends CI_Model {
     /*---------------------------------------------------------------------------------------
         : GET message deleivery report from text-local server
     ----------------------------------------------------------------------------------------*/
-    function messages_report () {
+    function messages_report ($params = array()) {
             // Account details
             $apiKey = urlencode('9FUGpx76Lv4-co6Tv7eY1O585eevwfyasTQu3ind1N');
          
             // Prepare data for POST request
-            $data = array('apikey' => $apiKey);
+            $data = array('apikey' => $apiKey, 'start' => $params['start'], 'limit' => $params['limit']);
          
             // Send the POST request with cURL
             $ch = curl_init('https://api.textlocal.in/get_history_api/');

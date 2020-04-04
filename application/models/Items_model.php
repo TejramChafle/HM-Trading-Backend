@@ -28,13 +28,30 @@ class Items_model extends CI_Model {
         $pagination['offset'] = $offset;
 
         // SEARCH RESULT
-        $this->db->limit($limit, $offset);
+        /*$this->db->limit($limit, $offset);
         $this->db->order_by("item_id", "desc");
-        $query = $this->db->get('item');
-            
-        $return_result = array();    
-        $return_result['records'] = $query->result_array();
+        $query = $this->db->get('item');*/
+
+
+        $query = "SELECT
+                  item.*,
+                  COUNT(customer.item_id) AS card_item_total
+                FROM
+                  item
+                LEFT JOIN customer ON customer.item_id = item.item_id
+                GROUP BY item.item_id";
+        $query_result = $this->db->query($query);
+
+        $return_result['records'] = $query_result->result_array();
         $return_result['pagination'] = $pagination;
+
+        // Get the item & count list assigned to lucky customer
+        $this->db->select('lucky_draw_item, COUNT(lucky_draw_item) as draw_item_total');
+        $this->db->where('lucky_draw_item IS NOT NULL', null, false);
+        $this->db->group_by('lucky_draw_item');
+        $this->db->from('customer');
+        $query = $this->db->get();
+        $return_result['lucky_customer_distribution'] = $query->result_array();
 
         return $return_result;
     }
@@ -76,7 +93,7 @@ class Items_model extends CI_Model {
     }
 
 
-    // Get the list of all items 
+    // Get the list of all items associated with lucky draw scheme
     function get_item_distribution($data) {
         $offset = $data['offset'];
         $limit  = $data['limit'];
@@ -88,28 +105,17 @@ class Items_model extends CI_Model {
         
         //PAGINATION
         $this->db->select('customer.item_id, COUNT(customer.item_id) as total');
+        // $this->db->select('customer.lucky_draw_item, COUNT(customer.lucky_draw_item) as draw_item_total');
         $this->db->group_by('customer.item_id');
         $this->db->from('customer');
         $this->db->join('item', 'item.item_id = customer.item_id');
         $query = $this->db->get();
 
-        // $size = $this->db->count_all_results('item');
         $pagination = array();
-        // $pagination['size'] = $size;
         $pagination['size'] = $query->num_rows();
         $pagination['page'] = $page;
         $pagination['offset'] = $offset;
 
-        // SEARCH RESULT
-        // $this->db->limit($limit, $offset);
-        // $this->db->select('item_id, COUNT(item_id) as total');
-        // $this->db->group_by('customer.item_id');
-        // $this->db->from('customer');
-        // $this->db->join('item', 'item.item_id = customer.item_id');
-        // $this->db->order_by("item_id", "desc");
-        // $query = $this->db->get();
-        
-        // $query = $this->db->get('item');
         $query_result = array();
         foreach($query->result_array() as $item) {
 
@@ -125,7 +131,31 @@ class Items_model extends CI_Model {
         $return_result['records'] = $query_result;
         $return_result['pagination'] = $pagination;
 
+
+
+        // Get the item & count list assigned to lucky customer
+        $this->db->select('lucky_draw_item, COUNT(lucky_draw_item) as draw_item_total');
+        $this->db->where('lucky_draw_item IS NOT NULL', null, false);
+        $this->db->group_by('lucky_draw_item');
+        $this->db->from('customer');
+        $query = $this->db->get();
+        $return_result['lucky_customer_distribution'] = $query->result_array();
+
         return $return_result;
+    }
+
+
+    // Get the item & count list assigned to lucky customer
+    function get_draw_customer_item_distribution() {
+
+        // $this->db->select('customer.item_id, COUNT(customer.item_id) as total');
+        $this->db->select('lucky_draw_item, COUNT(lucky_draw_item) as draw_item_total');
+        $this->db->where('lucky_draw_item IS NOT NULL', null, false);
+        $this->db->group_by('lucky_draw_item');
+        $this->db->from('customer');
+        $query = $this->db->get();
+
+        return $query->result_array();
     }
 
 }

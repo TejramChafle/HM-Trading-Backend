@@ -77,14 +77,20 @@ class Transactions_model extends CI_Model {
             $this->db->where('customer_id', $data['customer_id']);
         } 
 
-        $this->db->order_by("created_date", "desc");
+        /*if (isset($data['customer_id'])) {
+            $this->db->order_by("account_id", "asc");    
+        } else {
+            $this->db->order_by("created_date", "desc");
+        }*/
+        $this->db->order_by("created_date", "asc");
+        
         $this->db->limit($limit, $offset);
         $query = $this->db->get('loan_transactions');
 
         // $result['transactions'] = $query->result_array();
         $transactions = $query->result_array();     
 
-        if( isset($data['customer_id']) ) {
+        if (isset($data['customer_id'])) {
 
             $result = array();
             $this->db->where('customer_id', $data['customer_id']);
@@ -93,7 +99,7 @@ class Transactions_model extends CI_Model {
 
             $balances = array();
 
-            $this->db->where('customer_id', $data['customer_id']);
+            /*$this->db->where('customer_id', $data['customer_id']);
             $query = $this->db->get('loan_accounts');
             $result['account'] = $query->row_array();
 
@@ -103,6 +109,44 @@ class Transactions_model extends CI_Model {
                 $previous_balance = $value['balance'];
                 $value['total'] = $value['amount'] + $value['fine_paid'] + $value['interest_paid'];
                 array_push($balances, $value);
+            }*/
+
+            
+            /*foreach ($transactions as $transaction) {
+                if (array_search($transaction['account_id'], $balances)) {
+                    $previous_transaction = array_search($transaction['account_id'], $balances);
+                    $transaction['previous_balance'] = $previous_transaction['balance'];
+                } else {
+                    if ($transaction['type']=='Saving') {
+                        $transaction['previous_balance'] = 0;
+                    } else {
+                        $this->db->where('account_id', $transaction['account_id']);
+                        $query = $this->db->get('loan_accounts');
+                        $account = $query->row_array();
+                        $transaction['previous_balance'] = $account['amount'];
+                    }
+                }
+                 
+                // $previous_balance = $value['balance'];
+                $transaction['total'] = $transaction['amount'] + $transaction['fine_paid'] + $transaction['interest_paid'];
+                array_push($balances, $transaction);
+            }*/
+
+            for ($i=0; $i<sizeof($transactions); $i++) {
+                if (isset($transactions[$i-1]['account_id']) && $transactions[$i-1]['account_id'] == $transactions[$i]['account_id']) {
+                    $transactions[$i]['previous_balance'] = $transactions[$i-1]['balance'];
+                } else {
+                    if ($transactions[$i]['type']=='Saving') {
+                        $transactions[$i]['previous_balance'] = 0;
+                    } else {
+                        $this->db->where('account_id', $transactions[$i]['account_id']);
+                        $query = $this->db->get('loan_accounts');
+                        $account = $query->row_array();
+                        $transactions[$i]['previous_balance'] = $account['amount'];
+                    }
+                }
+                $transactions[$i]['total'] = $transactions[$i]['amount'] + $transactions[$i]['fine_paid'] + $transactions[$i]['interest_paid'];
+                array_push($balances, $transactions[$i]);
             }
 
             $result['transactions'] = $balances;
@@ -291,6 +335,15 @@ class Transactions_model extends CI_Model {
         // Now add the new record to customer_installment
         $query = $this->db->insert('loan_transactions', $input);
         $insert_id = $this->db->insert_id(); 
+
+        // If the balance for loan account is zero then, deactivate the account
+        if ($input['balance']==0 && $params['type'] == 'Loan' && isset($insert_id)) {
+            $data = array();
+            $data['isActive'] = 0;
+            $data['last_modified_date'] = date('Y-m-d H:i:s');;
+            $this->db->where('account_id', $input['account_id']);
+            $query = $this->db->update('loan_accounts', $data);
+        }
 
         if(isset($customer['phone'])) {
 

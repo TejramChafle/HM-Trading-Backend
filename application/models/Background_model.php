@@ -47,5 +47,56 @@ class Background_model extends CI_Model {
         $this->db->insert('system_users', $data);
     }
 
+
+    /*---------------------------------------------------------------------------------------
+        : SEND NOTIFICATION to pending installments
+    ----------------------------------------------------------------------------------------*/
+    function send_notification_to_pending_installments($params = array()) {
+        $this->load->database();
+
+        if (!isset($params['scheme_installment_id'])) {
+            $month = date('F');
+            $this->db->where('month', $month);
+            $query = $this->db->get('scheme_installment');    
+            $params['scheme_installment_id'] = $query->row_array()['scheme_installment_id'];
+        } else {
+            $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
+            $query = $this->db->get('scheme_installment');    
+            $month = $query->row_array()['month'];
+        }
+
+        $this->db->select('customer_id');
+        $this->db->where('scheme_installment_id', $params['scheme_installment_id']);
+        $query = $this->db->get('customer_installments');
+
+        $paid_customer_ids = $query->result_array();
+
+        $this->db->where_not_in('customer_id', array_column($paid_customer_ids, 'customer_id'));
+        $this->db->where('card_number IS NOT NULL', null, false);
+        $this->db->where('isActive', '1');
+        $this->db->order_by("agent_id", "asc");
+        $query = $this->db->get('customer');
+
+        $messages = array();
+        foreach($query->result_array() as $customer) {
+
+            if (isset($customer['mobile_number'])) {
+
+                $msisdn  =  $customer['mobile_number'];
+                $name = $customer['name'];
+
+                // Replace with your Message content
+                $msg = "Dear ".$name.", you have missed the installment payment of ".$month." for card ".$customer['card_number'].". The delay could impose a fine of Rs 5. Contact for help on +919765737487.";
+
+                // Send message from send message service
+                $this->load->model('Sendsms_model');
+                $result = $this->Sendsms_model->send_sms($msg, $msisdn);
+                array_push($messages, $result);
+            }
+        }
+        return $messages;
+        // return $query->result_array();
+    }
+
 }
 ?>
