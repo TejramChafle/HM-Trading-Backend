@@ -528,7 +528,7 @@ class Customer_model extends CI_Model {
         $this->db->where('loan_accounts.type', $data['type']);
         $this->db->where('loan_accounts.isActive', 1);
         $this->db->join('loan_accounts', 'loan_customers.customer_id = loan_accounts.customer_id');
-        $this->db->group_by('loan_customers.customer_id');
+        // $this->db->group_by('loan_customers.customer_id');
         $query = $this->db->get();
         $query_result = $query->result_array();
         

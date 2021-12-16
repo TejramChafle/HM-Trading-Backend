@@ -78,7 +78,9 @@ class Items_model extends CI_Model {
     // Add the item details in db
     function add_item($data) {
         try {
-            if(isset($data['item_id'])) {
+            if (isset($data['item_id'])) {
+                unset($data['card_item_total']);
+                unset($data['total']);
                 $this->db->where('item_id', $data['item_id']);
                 $query = $this->db->update('item', $data);
                 return $query;
