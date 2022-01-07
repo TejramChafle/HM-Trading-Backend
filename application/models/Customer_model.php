@@ -575,4 +575,13 @@ class Customer_model extends CI_Model {
         $query = $this->db->update('loan_accounts', $params);
         return $query;
     }
+
+    // Update the multiple customer records to mark item delivered on today's date
+    function update_customer_item_deliveries($params = array()) {
+        $item_delivery_date = date('Y-m-d H:i:s');
+        $ids = implode(",", $params);
+        $sql = "UPDATE customer SET item_delivery_date = '".$item_delivery_date."', is_item_delivered = 1 WHERE customer_id IN (".$ids.")";
+        $query = $this->db->query($sql);
+        return $query;
+    }
 }

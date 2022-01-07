@@ -96,4 +96,13 @@ class Customer extends CI_Controller {
         }
     }
 
+    // Update the multiple customer records to mark item delivered for provided customer Ids
+    public function update_customer_item_deliveries() {
+        $input_data= json_decode(file_get_contents('php://input'), TRUE);
+        if ($this->input->server('REQUEST_METHOD') == 'POST') {
+            $this->load->model('Customer_model');
+            $resp = $this->Customer_model->update_customer_item_deliveries($input_data);
+            echo json_encode($resp);
+        }
+    }
 }

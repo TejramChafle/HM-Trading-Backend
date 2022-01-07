@@ -46,13 +46,28 @@ class Items_model extends CI_Model {
         $return_result['pagination'] = $pagination;
 
         // Get the item & count list assigned to lucky customer
-        $this->db->select('lucky_draw_item, COUNT(lucky_draw_item) as draw_item_total');
+        $this->db->select('lucky_draw_item, COUNT(lucky_draw_item) as count');
         $this->db->where('lucky_draw_item IS NOT NULL', null, false);
         $this->db->group_by('lucky_draw_item');
         $this->db->from('customer');
         $query = $this->db->get();
         $return_result['lucky_customer_distribution'] = $query->result_array();
 
+        // Get the item & count of free items distributed to customers
+        $this->db->select('free_item, COUNT(free_item) as count');
+        $this->db->where('free_item IS NOT NULL', null, false);
+        $this->db->group_by('free_item');
+        $this->db->from('customer');
+        $query = $this->db->get();
+        $return_result['free_item_distribution'] = $query->result_array();
+
+        // Get the delivered items count to customers
+        $this->db->select('item_id, COUNT(item_id) as count');
+        $this->db->where('is_item_delivered', 1);
+        $this->db->group_by('item_id');
+        $this->db->from('customer');
+        $query = $this->db->get();
+        $return_result['items_delivered'] = $query->result_array();
         return $return_result;
     }
 
@@ -81,6 +96,9 @@ class Items_model extends CI_Model {
             if (isset($data['item_id'])) {
                 unset($data['card_item_total']);
                 unset($data['total']);
+                unset($data['free_count']);
+                unset($data['draw_item_total']);
+                unset($data['item_delivered']);
                 $this->db->where('item_id', $data['item_id']);
                 $query = $this->db->update('item', $data);
                 return $query;
